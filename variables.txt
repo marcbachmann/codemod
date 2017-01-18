@@ -1,0 +1,4 @@
+repos/livingdocs-server upfrontIO/livingdocs-server
+repos/nzz-api nzzdev/livingdocs-api
+repos/livingdocs-editor upfrontIO/livingdocs-editor
+repos/nzz-editor nzzdev/livingdocs-editor

@@ -1,0 +1,35 @@
+#!/bin/bash
+
+case $1 in
+run)
+	./run clone && ./run transform && ./run commit
+  ;;
+clone)
+	./eachdir -c 'hub clone $VAR1 .'
+  ;;
+transform)
+	./node_modules/.bin/jscodeshift --extensions=js,coffee,json ./
+  ;;
+commit)
+	./eachdir -c 'git add ./ && git commit -m "chore: Upgrade to @livingdocs/editor@10.0.0" && git push -f -u origin $(git rev-parse --abbrev-ref HEAD)'
+  ;;
+pr)
+  ./eachdir hub pull-request --no-edit
+  ;;
+checkout)
+  ./eachdir git checkout upgrade-to-new-config
+  ;;
+
+*)
+  echo 'Usage: ./run [command]'
+  echo ''
+  echo 'Where command is one of'
+  echo '  run'
+  echo '  clone'
+  echo '  transform'
+  echo '  commit'
+  echo '  pr'
+  echo '  checkout'
+  exit 1
+  ;;
+esac

@@ -1,0 +1,31 @@
+{
+  "name": "codemod",
+  "version": "0.0.1",
+  "description": "A small tool to automate pull requests and code changes",
+  "main": "transform.js",
+  "dependencies": {
+    "async-each-series": "^1.1.0",
+    "execa": "^0.5.0",
+    "get-stdin": "^5.0.1",
+    "mkdirp": "^0.5.1"
+  },
+  "devDependencies": {
+    "standard": "^8.6.0"
+  },
+  "scripts": {
+    "test": "standard"
+  },
+  "author": "Marc Bachmann <marc.brookman@gmail.com>",
+  "license": "ISC",
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marcbachmann/codemod.git"
+  },
+  "bugs": {
+    "url": "https://github.com/marcbachmann/codemod/issues"
+  },
+  "homepage": "https://github.com/marcbachmann/codemod#readme"
+}

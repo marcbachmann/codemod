@@ -1,0 +1,77 @@
+#!/usr/bin/env node
+const execa = require('execa')
+const fs = require('fs')
+const path = require('path')
+const each = require('async-each-series')
+const mkdirp = require('mkdirp')
+const getStdin = require('get-stdin')
+
+const cwd = process.cwd()
+const raw = process.argv[2] === '-r'
+let args
+if (raw) args = process.argv.slice(3)
+else args = process.argv.slice(2)
+if (args[0] === '-c') {
+  args = args[1]
+} else {
+  args = args.map(function (a) {return / /.test(a) ? `'${a}'` : a}).join(' ')
+}
+
+if (!args) {
+  console.log([
+    'usage: ./exec [-r] [-c] <command>',
+    '',
+    'A command is required',
+    '-r    don\'t use formatted output',
+    '-c    use a \'bash -c\' like syntax to execute commands & interpolate variables',
+    '<command>  the command to execute in the directory',
+    '',
+    'The absolute path to the directory is available as `$DIR`.',
+    'The current working directory is available as `$ROOT`'
+  ].join('\n'))
+  process.exit(1)
+}
+
+getStdin().then(function (variables) {
+  if (variables) return start(variables)
+
+  const variableFile = path.resolve('./variables.txt')
+  const vars = fs.readFileSync(variableFile, 'utf8')
+  start(vars)
+})
+
+function start (jobs) {
+  jobs = jobs.trim().split('\n').filter(Boolean)
+  each(jobs, function (job, cb) {
+    const variables = job.split(' ')
+    const dir = path.resolve(variables[0])
+    mkdirp(dir, function (err) {
+      if (err) return cb(err)
+
+      if (!raw) {
+        const buffer = '-'.repeat(process.stdout.columns / 2)
+        console.log('\x1b[37m' + dir + '\n' + buffer + '\x1b[0m')
+      }
+
+      execa.shell(args.trim(), {
+        cwd: dir,
+        env: getEnv(cwd, dir, variables),
+        stdio: 'inherit'
+      }).then(function (a) {
+        if (!raw) process.stdout.write('\n')
+        cb()
+      }).catch(function (err) {
+        if (!raw) console.log('\x1b[37m\nExit code ' + err.code + '\n\x1b[0m')
+        cb()
+      })
+    })
+  }, function () {
+    if (!raw) console.log('\x1b[37m' + '-'.repeat(process.stdout.columns / 2) + '\nDone\x1b[0m')
+  })
+}
+
+function getEnv (cwd, dir, variables) {
+  return variables.reduce(function (a, v, i) { a['VAR' + i] = v; return a }, Object.assign(
+    {}, process.env, {DIR: dir, ROOT: cwd}
+  ))
+}
